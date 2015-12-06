@@ -103,5 +103,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 EL_PUNT_VALLES="http://elpuntvalles.com/"
