@@ -16,6 +16,19 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from cineREST.viewsets import FilmViewSet
+
+from rest_framework import routers
+
+
+# Routers provide an easy way of automatically determining the URL conf.
+router = routers.DefaultRouter()
+router.register(r'films', FilmViewSet)
+
+
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+
+    url(r'^', include(router.urls)),
+    url(r'^api/', include('rest_framework.urls', namespace='rest_framework')),
 ]
