@@ -14,7 +14,7 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        file = urllib2.urlopen(settings.EL_PUNT_VALLES+'index.php?lang=es')
+        file = urlopen(settings.EL_PUNT_VALLES+'index.php?lang=es')
         data = file.read()
         data.replace(" ", "")
         data.replace("\t", "")
