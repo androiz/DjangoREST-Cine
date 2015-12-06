@@ -3,7 +3,10 @@ from django.core.management.base import BaseCommand, CommandError
 from cineREST.models import Film
 import cine.settings as settings
 
-from urllib.request import urlopen
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 import re
 import json
 
@@ -14,7 +17,7 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        file = urlopen(settings.EL_PUNT_VALLES+'index.php?lang=es')
+        file = urllib2.urlopen(settings.EL_PUNT_VALLES+'index.php?lang=es')
         data = file.read()
         data.replace(" ", "")
         data.replace("\t", "")
@@ -85,7 +88,7 @@ class Command(BaseCommand):
         return res
 
     def get_data_from_url(self, url):
-        file = urlopen(url)
+        file = urllib2.urlopen(url)
         data = file.read()
         data.replace(" ", "")
         data.replace("\t", "")
