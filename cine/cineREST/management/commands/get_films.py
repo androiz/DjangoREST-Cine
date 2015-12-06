@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from cineREST.models import Film
 import cine.settings as settings
 
-import urllib2
+from urllib.request import urlopen
 import re
 import json
 
@@ -85,7 +85,7 @@ class Command(BaseCommand):
         return res
 
     def get_data_from_url(self, url):
-        file = urllib2.urlopen(url)
+        file = urlopen(url)
         data = file.read()
         data.replace(" ", "")
         data.replace("\t", "")
