@@ -33,6 +33,7 @@ class Command(BaseCommand):
                 f = Film(url=key, url_img=res[key]["url_img"], title=res[key]["title"], sinopsis=res[key]["sinopsis"],
                          on_screen=True)
                 f.save()
+                pass
             else:
                 f = Film.objects.get(url=key)
                 f.on_screen = True
@@ -62,39 +63,22 @@ class Command(BaseCommand):
             data = self.get_data_from_url(settings.EL_PUNT_VALLES+url+'&lang=es')
 
             #Get Img
-            img_url_index = data.index("art-fullimg span2")
-            img_url_1 = data[img_url_index:img_url_index+300]
-            sub_index = img_url_1.index("<img")
-            img_url_2 = img_url_1[sub_index:sub_index+250]
-            img_url_i = img_url_2.index("src=")
-            img_url_j = img_url_2.index("alt=")
-            img_url = img_url_2[img_url_i+5:img_url_j-2]
+            img_url = self.get_img(data)
 
             #Get Title
-            title_index = [m.start() for m in re.finditer('page-header', data)][1]
-            title_1 = data[title_index:title_index+500]
-            sub_index = title_1.index("<a")
-            title_2 = title_1[sub_index:sub_index+300]
-            title_i = title_2.index(">")
-            title_j = title_2.index("</a>")
-            title = title_2[title_i+1:title_j]
+            title = self.get_title(data)
 
             #Get Sinopsis
-            sinopsis_indexes = [m.start() for m in re.finditer('especial bsinopsis qw', data)]
-            sinopsis_index1 = sinopsis_indexes[0]
-            sinopsis_index2 = sinopsis_indexes[1]
-            sino_aux = data[sinopsis_index1:sinopsis_index2]
-            sinopsis_index2 = sino_aux.index('>Sinopsis<')
-            sino_1 = sino_aux[:sinopsis_index2]
-            aux = "title="
-            aux2 = "data-placement='bottom"
-            sino_i = sino_1.index(aux)
-            sino_j = sino_1.index(aux2)
-            sinopsis = sino_1[sino_i+len(aux)+1:sino_j-2]
+            sinopsis = self.get_sinopsis(data)
+
+            #Get Sessions
+            sessions = self.get_sessions(data)
+
 
             film["title"] = title.lstrip()
             film["url_img"] = settings.EL_PUNT_VALLES+img_url
             film["sinopsis"] = sinopsis
+            film["sessions"] = sessions
 
             res[url] = film
 
@@ -108,3 +92,86 @@ class Command(BaseCommand):
         file.close()
 
         return data
+
+    def get_img(self, data):
+        img_url_index = data.index("art-fullimg span2")
+        img_url_1 = data[img_url_index:img_url_index+300]
+        sub_index = img_url_1.index("<img")
+        img_url_2 = img_url_1[sub_index:sub_index+250]
+        img_url_i = img_url_2.index("src=")
+        img_url_j = img_url_2.index("alt=")
+        img_url = img_url_2[img_url_i+5:img_url_j-2]
+        return img_url
+
+    def get_title(self, data):
+        title_index = [m.start() for m in re.finditer('page-header', data)][1]
+        title_1 = data[title_index:title_index+500]
+        sub_index = title_1.index("<a")
+        title_2 = title_1[sub_index:sub_index+300]
+        title_i = title_2.index(">")
+        title_j = title_2.index("</a>")
+        title = title_2[title_i+1:title_j]
+        return title
+
+    def get_sinopsis(self, data):
+        sinopsis_indexes = [m.start() for m in re.finditer('especial bsinopsis qw', data)]
+        sinopsis_index1 = sinopsis_indexes[0]
+        sinopsis_index2 = sinopsis_indexes[1]
+        sino_aux = data[sinopsis_index1:sinopsis_index2]
+        sinopsis_index2 = sino_aux.index('>Sinopsis<')
+        sino_1 = sino_aux[:sinopsis_index2]
+        aux = "title="
+        aux2 = "data-placement='bottom"
+        sino_i = sino_1.index(aux)
+        sino_j = sino_1.index(aux2)
+        sinopsis = sino_1[sino_i+len(aux)+1:sino_j-2]
+        return sinopsis
+
+    def get_sessions(self, data):
+        title_index = [m.start() for m in re.finditer('taula-dia', data)]
+
+        for i in title_index:
+            session = dict()
+
+            #Get day
+            d = data[i:i+2000]
+            aux_i = d.index('<h4>')
+            if d[aux_i+4] == "<" or d[aux_i+4] == "&":
+                aux2_i = d.index('</a>')
+                aux2_j = d.index('</h4>')
+                day = d[aux2_i+4:aux2_j]
+            else:
+                aux2_j = d.index('</h4>')
+                day = d[aux_i+4:aux2_j]
+
+
+
+            #Get Hour
+            num_days = len(title_index) - 1
+            pointer = title_index.index(i)
+            next_pointer = 2000
+            if pointer < num_days:
+                next_pointer = title_index[pointer + 1]
+            hoursData = data[i:next_pointer]
+            positions = [m.start() for m in re.finditer('submit', hoursData)]
+
+            hours = list()
+            for p in positions:
+                aux = hoursData[p:p+50]
+                aux_i = aux.index('>') + 1
+                aux_j = aux.index('</a>')
+                hour = aux[aux_i:aux_j].strip()
+                hours.append(hour)
+
+            #Get Sala
+            '''
+            sala_i = d.index('Sala:')
+            aux = d[sala_i:sala_i+10]
+            aux_j = aux.index('<')
+            aux_i = 6
+            sala = aux[aux_i:aux_j]
+            '''
+
+            session[pointer] = {"day": day, "hours": hours}
+
+        return session
