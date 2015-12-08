@@ -6,3 +6,4 @@ class Film(models.Model):
     url_img = models.CharField(max_length=255)
     title = models.CharField(max_length=64)
     on_screen = models.BooleanField(default=False)
+    sinopsis = models.CharField(max_length=400, default="")
