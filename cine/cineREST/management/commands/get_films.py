@@ -31,9 +31,8 @@ class Command(BaseCommand):
         for key in res:
             if not Film.objects.filter(url=key):
                 f = Film(url=key, url_img=res[key]["url_img"], title=res[key]["title"], sinopsis=res[key]["sinopsis"],
-                         on_screen=True)
+                         on_screen=True, sessions=res[key]["sessions"])
                 f.save()
-                pass
             else:
                 f = Film.objects.get(url=key)
                 f.on_screen = True
@@ -129,10 +128,8 @@ class Command(BaseCommand):
 
     def get_sessions(self, data):
         title_index = [m.start() for m in re.finditer('taula-dia', data)]
-
+        session = dict()
         for i in title_index:
-            session = dict()
-
             #Get day
             d = data[i:i+2000]
             aux_i = d.index('<h4>')
@@ -149,19 +146,25 @@ class Command(BaseCommand):
             #Get Hour
             num_days = len(title_index) - 1
             pointer = title_index.index(i)
-            next_pointer = 2000
+            next_pointer = 0
             if pointer < num_days:
                 next_pointer = title_index[pointer + 1]
-            hoursData = data[i:next_pointer]
+                hoursData = data[i:next_pointer]
+            else:
+                hoursData = data[i:]
             positions = [m.start() for m in re.finditer('submit', hoursData)]
 
             hours = list()
             for p in positions:
                 aux = hoursData[p:p+50]
-                aux_i = aux.index('>') + 1
-                aux_j = aux.index('</a>')
-                hour = aux[aux_i:aux_j].strip()
-                hours.append(hour)
+                try:
+                    aux_i = aux.index('>') + 1
+                    aux_j = aux.index('</a>')
+                    hour = aux[aux_i:aux_j].strip()
+                    hours.append(hour)
+                except:
+                    pass
+
 
             #Get Sala
             '''
@@ -172,6 +175,6 @@ class Command(BaseCommand):
             sala = aux[aux_i:aux_j]
             '''
 
-            session[pointer] = {"day": day, "hours": hours}
+            session[day] = {"hours": hours}
 
-        return session
+        return str(json.dumps(session))

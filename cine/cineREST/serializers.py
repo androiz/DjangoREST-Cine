@@ -6,4 +6,4 @@ from rest_framework import serializers
 class FilmSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Film
-        fields = ('url', 'url_img', 'title', 'sinopsis')
+        fields = ('url', 'url_img', 'title', 'sinopsis', 'sessions')
