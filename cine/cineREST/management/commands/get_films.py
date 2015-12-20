@@ -155,7 +155,7 @@ class Command(BaseCommand):
                 hoursData = data[i:]
             positions = [m.start() for m in re.finditer('submit', hoursData)]
 
-            hours = dict()
+            hours = list()
             for p in positions:
                 aux = hoursData[p:p+50]
                 aux2 = hoursData[p:p+1000]
@@ -171,16 +171,23 @@ class Command(BaseCommand):
                     aux_j = text.index('<spa')
                     disponibles = int(text[0:aux_j])
 
+
+                    '''
                     ref1 = 'un total de'
                     aux_i = aux2.index(ref1) + len(ref1) + 1
                     text = aux2[aux_i:aux_i+10]
                     aux_j = text.index(')\'')
                     total = int(text[0:aux_j])
+                    '''
 
-                    hours[hour] = {"Disponibles": disponibles, "Total": total}
+                    hours.append(hour+" "+str(disponibles))
 
                 except:
-                    pass
+                    try:
+                        hours.append(hour+" "+str(0))
+                    except:
+                        print "Error"
+                        pass
 
 
             #Get Sala
