@@ -184,10 +184,27 @@ class Command(BaseCommand):
 
                 except:
                     try:
-                        hours.append(hour+" "+str(0))
+                        aux_i = aux.index('>') + 1
+                        aux_j = aux.index('</a>')
+                        hour = aux[aux_i:aux_j].strip()
+
+                        aux2 = hoursData[p-2200:p]
+                        ref1 = 'Butacas disponibles:'
+                        aux_i = aux2.index(ref1) + len(ref1) + 1
+                        text = aux2[aux_i:aux_i+10]
+                        aux_j = text.index('<spa')
+                        disponibles = int(text[0:aux_j])
+
+                        hours.append(hour+" "+str(disponibles))
                     except:
-                        print "Error"
-                        pass
+                        try:
+                            aux_i = aux.index('>') + 1
+                            aux_j = aux.index('</a>')
+                            hour = aux[aux_i:aux_j].strip()
+
+                            hours.append(hour+" "+str(0))
+                        except:
+                            pass
 
 
             #Get Sala
