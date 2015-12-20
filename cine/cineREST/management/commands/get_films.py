@@ -1,3 +1,4 @@
+import datetime
 from django.core.management.base import BaseCommand, CommandError
 
 from cineREST.models import Film
@@ -154,14 +155,30 @@ class Command(BaseCommand):
                 hoursData = data[i:]
             positions = [m.start() for m in re.finditer('submit', hoursData)]
 
-            hours = list()
+            hours = dict()
             for p in positions:
                 aux = hoursData[p:p+50]
+                aux2 = hoursData[p:p+1000]
+
                 try:
                     aux_i = aux.index('>') + 1
                     aux_j = aux.index('</a>')
                     hour = aux[aux_i:aux_j].strip()
-                    hours.append(hour)
+
+                    ref1 = 'Butacas disponibles:'
+                    aux_i = aux2.index(ref1) + len(ref1) + 1
+                    text = aux2[aux_i:aux_i+10]
+                    aux_j = text.index('<spa')
+                    disponibles = int(text[0:aux_j])
+
+                    ref1 = 'un total de'
+                    aux_i = aux2.index(ref1) + len(ref1) + 1
+                    text = aux2[aux_i:aux_i+10]
+                    aux_j = text.index(')\'')
+                    total = int(text[0:aux_j])
+
+                    hours[hour] = {"Disponibles": disponibles, "Total": total}
+
                 except:
                     pass
 
@@ -175,6 +192,6 @@ class Command(BaseCommand):
             sala = aux[aux_i:aux_j]
             '''
 
-            session[day] = {"hours": hours}
+            session[day] = hours
 
         return str(json.dumps(session))
